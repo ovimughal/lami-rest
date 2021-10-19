@@ -1,5 +1,5 @@
 {
-    "name": "ovimughal/lami-rest",
+    "name": "ovimughal/lamirest",
     "description": "Laminas REST api/microframework/config/JWT Auth/ACL/SSO/Multitenant",
     "license": "MIT",
     "type": "framework",
