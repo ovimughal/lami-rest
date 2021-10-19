@@ -1,0 +1,39 @@
+{
+    "name": "ovimughal/lami-rest",
+    "description": "Laminas REST api/microframework/config/JWT Auth/ACL/SSO/Multitenant",
+    "license": "MIT",
+    "type": "framework",
+    "keywords": [
+        "Laminas REST API",
+        "Php framework",
+        "Rest",
+        "Multitenant",
+        "SSO",
+        "ACL",
+	    "JWT",
+        "Doctrine",
+        "File manager",
+        "Jasper reporting",
+	    "Rest config"
+    ],
+    "homepage": "https://github.com/ovimughal/lamirest",
+    "authors": [
+        {
+            "name": "Owais Mughal",
+            "email": "ovi.mughal@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.3",
+        "doctrine/doctrine-orm-module": "^3.1",
+        "firebase/php-jwt": "^5.2",
+        "laminas/laminas-json": "^3.1",
+        "laminas/laminas-permissions-acl": "^2.7",
+	    "ovimughal/lamirator": "1.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lamirest\\": "src/"
+        }
+    }
+}
