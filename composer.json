@@ -24,12 +24,12 @@
         }
     ],
     "require": {
-        "php": "^7.3",
-        "doctrine/doctrine-orm-module": "^3.1",
-        "firebase/php-jwt": "^5.2",
-        "laminas/laminas-json": "^3.1",
-        "laminas/laminas-permissions-acl": "^2.7",
-	    "ovimughal/lamirator": "1.0.0"
+        "php": "^8.1",
+        "doctrine/doctrine-orm-module": "^5.3.0",
+        "firebase/php-jwt": "^6.3.2",
+        "laminas/laminas-json": "^3.5.0",
+        "laminas/laminas-permissions-acl": "^2.14.0",
+	    "ovimughal/lamirator": "1.0.1"
     },
     "autoload": {
         "psr-4": {
