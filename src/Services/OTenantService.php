@@ -20,8 +20,10 @@ class OTenantService
 
     public function __construct(ContainerInterface $container)
     {
-        $tenantConfig = ServiceInjector::oFileManager()->getOconfigManager()['tenant']['tenant_provider'];
-        $this->tenantProvider = new $tenantConfig;
+        if ($this->isMultitenancyEnabled()) {
+            $tenantConfig = ServiceInjector::oFileManager()->getOconfigManager()['tenant']['tenant_provider'];
+            $this->tenantProvider = new $tenantConfig;
+        }
     }
 
     public function isMultitenancyEnabled(): bool
@@ -86,7 +88,7 @@ class OTenantService
             if ($organizationId) {
                 $tenantInfo = $this->tenantConnection($organizationId);
             }
-            
+
             if (!$tenantInfo) {
 
                 // $tenantData['host'] = getenv('MASTER_DB_HOST');

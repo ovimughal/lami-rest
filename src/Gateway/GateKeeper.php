@@ -32,28 +32,38 @@ class GateKeeper extends AbstractPlugin
     {
         $this->injectServiceLocator($e);
         //        $this->appLanguage($e);
-        /**
-         * @var Response
-         */
-        $res = $this->isApiKeyValid($e);
 
         $oConfigMngr = ServiceInjector::$serviceLocator->get('config')['oconfig_manager'];
         $loginEnabled = $oConfigMngr['settings']['enable_login'];
+        $enableAcl = $oConfigMngr['settings']['enable_acl'];
         $appDevEnv = $oConfigMngr['settings']['app_development_env'];
         $multitenancyEnabled = $oConfigMngr['settings']['enable_multitenancy'];
         $openIdentityRoutes = $oConfigMngr['open_identity_routes'];
         $openAccessRoutes = $oConfigMngr['open_access_routes'];
         $ssoRoutes = $oConfigMngr['sso_routes'];
+        $openPublicRoutes = $oConfigMngr['open_public_routes'];
         define('ENV', is_bool($appDevEnv) ? $appDevEnv : true);
 
-        if ($res->getStatusCode() == 200) {
-            $fullRoute = $e->getRouteMatch()->getMatchedRouteName();
-            $routeArr = explode('/', $fullRoute);
-            $route = ($routeArr && count($routeArr)) ? $routeArr[0] : null;
+        $fullRoute = $e->getRouteMatch()->getMatchedRouteName();
+        $routeArr = explode('/', $fullRoute);
+        $route = ($routeArr && count($routeArr)) ? $routeArr[0] : null;
+
+        /**
+         * @var Response
+         */
+        $res = $e->getResponse();
+
+        if ($route && !in_array($route, $openPublicRoutes)) {
+            $res = $this->isApiKeyValid($e);
+        }
+
+        if ($res->getStatusCode() == 200 && !in_array($route, $openPublicRoutes)) {
+
             if ($route && !in_array($route, $openIdentityRoutes)) {
                 // if ('login' != $routeArr[0]) {
+
+                $isSSO = in_array($route, $ssoRoutes);
                 if ($loginEnabled) {
-                    $isSSO = in_array($route, $ssoRoutes);
                     $res = $this->identify($isSSO);
                     // /**
                     //  * @var Request
@@ -65,7 +75,7 @@ class GateKeeper extends AbstractPlugin
                     if ($multitenancyEnabled) {
                         $res = $this->tenantScanner();
                     }
-                    if ($res->getStatusCode() == 200 && !in_array($route, $openAccessRoutes)) {
+                    if ($res->getStatusCode() == 200 && !in_array($route, $openAccessRoutes) && $enableAcl) {
                         $res = $this->accessVerifier($e);
                     }
                 }

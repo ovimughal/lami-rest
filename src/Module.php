@@ -25,7 +25,8 @@ class Module
 
         $configFiles = [
             __DIR__ . '/../config/module.config.php',
-            __DIR__ . '/../config/services.config.php'
+            __DIR__ . '/../config/services.config.php',
+            __DIR__ . '/../config/doctrine.config.php'
         ];
 
         // Merge all module config options
@@ -114,6 +115,10 @@ class Module
             'factories' => array(
                 'masterDoctObjMngr' => function($sm) {
                     $em = $sm->get('Doctrine\ORM\EntityManager');
+                    return $em;
+                },
+                'doctObjMngr' => function($sm) {
+                    $em = $sm->get('doctrine.entitymanager.orm_tenant');
                     return $em;
                 }
             ),
