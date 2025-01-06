@@ -2,15 +2,22 @@
 
 namespace Lamirest;
 
-$catalogEntityNamespace = getenv('CATALOG_ENTITY_NAMESPACE');
-$tenantEntityNamespace = getenv('TENANT_ENTITY_NAMESPACE');
+$catalogEntityNamespace = getenv('CATALOG_ENTITY_NAMESPACE') === false ? 'Application' : getenv('CATALOG_ENTITY_NAMESPACE');
+$tenantEntityNamespace = getenv('TENANT_ENTITY_NAMESPACE') === false ? 'Login' : getenv('TENANT_ENTITY_NAMESPACE');
 
 $dir = __DIR__;
-$start = strpos($dir,'/vendor/');
 
-$catalogEntityPath = substr_replace($dir,"/module/$catalogEntityNamespace/src/Entity",$start);
-$tenantEntityPath = substr_replace($dir,"/module/$tenantEntityNamespace/src/Entity",$start);
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+    $start = strpos($dir, '\vendor\\');
 
+    $catalogEntityPath = substr_replace($dir, "\module\\$catalogEntityNamespace\src\Entity", $start);
+    $tenantEntityPath = substr_replace($dir, "\module\\$tenantEntityNamespace\src\Entity", $start);
+} else {
+    $start = strpos($dir, '/vendor/');
+
+    $catalogEntityPath = substr_replace($dir, "/module/$catalogEntityNamespace/src/Entity", $start);
+    $tenantEntityPath = substr_replace($dir, "/module/$tenantEntityNamespace/src/Entity", $start);
+}
 
 return [
     // comment out when generating entities for tenant db
