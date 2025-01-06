@@ -95,7 +95,7 @@ class OmodelBaseProvider extends OhandlerBaseProvider
         return $result;
     }
 
-    public function select($dql, $paramsArr, $errMsg = null, $limit = null, $option = null, string $doctrineServiceName = 'doctObjMngr')
+    public function select($dql, $paramsArr, $errMsg = null, $limit = null, $offset = null, $option = null, string $doctrineServiceName = 'doctObjMngr')
     {
         try {
             parent::setSuccess(true);
@@ -105,6 +105,9 @@ class OmodelBaseProvider extends OhandlerBaseProvider
             $query->setParameters($paramsArr);
             if (null != $limit) {
                 $query->setMaxResults($limit);
+            }
+            if (null != $offset) {
+                $query->setFirstResult($offset);
             }
             $queryResult = $query->getArrayResult();
 

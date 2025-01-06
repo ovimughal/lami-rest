@@ -3,6 +3,7 @@
 namespace Lamirest\Services;
 
 use Exception;
+use Laminas\Mvc\MvcEvent;
 use Lamirest\BaseProvider\OmodelBaseProvider;
 use Lamirest\DI\ServiceInjector;
 use Lamirest\Sniffers\OexceptionSniffer;
@@ -187,8 +188,8 @@ class OaclService extends OmodelBaseProvider
         return $res;
     }
 
-    public function requestAnalyzer($e)
-    {
+    public function requestAnalyzer(MvcEvent $e)
+    {        
         $controllerTarget = $e->getTarget();
         $controllerClass = get_class($controllerTarget);
         $moduleName = strtolower(substr($controllerClass, 0, strpos($controllerClass, '\\')));
@@ -205,6 +206,15 @@ class OaclService extends OmodelBaseProvider
         $controllerPrefix = str_replace('Controller', '', $popLast); //Remove Controller suffix
         $controller = strtolower($controllerPrefix);
 
+        $editMethodsArr = $this->getOconfigManager()['aclEditMethods'];
+        $action = $routeMatch->getParam('action', 'not-found');
+        $editControllerActions= array_map(function($x){return strtolower($x['controller']).'_'.$x['action'];},$editMethodsArr);
+        $key = array_search($controller.'_'.$action, $editControllerActions);
+
+        if($key !== false){
+            $restMethod = 'PATCH';
+        }
+
         return [
             'module' => $moduleName,
             'controller' => $controller,
@@ -216,7 +226,7 @@ class OaclService extends OmodelBaseProvider
     public function dbResourceDump()
     {
         try {
-            $dql = 'SELECT acl.get, acl.post, acl.put, acl.patch, acl.delete, r.rolename, '
+            $dql = 'SELECT acl.getval, acl.postval, acl.putval, acl.patchval, acl.deleteval, r.rolename, '
                     . 'rt.modulename, rt.controllername, rt.routename '
                     . 'FROM ' . $this->getPath() . '\Acl acl JOIN acl.roleid r '
                     . 'JOIN acl.routeid rt where r.rolename = ?1';
@@ -237,27 +247,31 @@ class OaclService extends OmodelBaseProvider
                 $controller = $data['controllername'];
                 $route = $data['routename'];
 
-                if ($data['get']) {
+                if(!$acl->hasResource($module)){
+                    continue;
+                }
+
+                if ($data['getval']) {
                     $method = 'GET';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
 
-                if ($data['post']) {
+                if ($data['postval']) {
                     $method = 'POST';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
 
-                if ($data['put']) {
+                if ($data['putval']) {
                     $method = 'PUT';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
 
-                if ($data['patch']) {
+                if ($data['patchval']) {
                     $method = 'PATCH';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
 
-                if ($data['delete']) {
+                if ($data['deleteval']) {
                     $method = 'DELETE';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
