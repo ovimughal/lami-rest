@@ -32,6 +32,10 @@ class GateKeeper extends AbstractPlugin
     {
         $this->injectServiceLocator($e);
         //        $this->appLanguage($e);
+        /**
+         * @var Response
+         */
+        $res = $this->isApiKeyValid($e);
 
         $oConfigMngr = ServiceInjector::$serviceLocator->get('config')['oconfig_manager'];
         $loginEnabled = $oConfigMngr['settings']['enable_login'];
@@ -41,24 +45,12 @@ class GateKeeper extends AbstractPlugin
         $openIdentityRoutes = $oConfigMngr['open_identity_routes'];
         $openAccessRoutes = $oConfigMngr['open_access_routes'];
         $ssoRoutes = $oConfigMngr['sso_routes'];
-        $openPublicRoutes = $oConfigMngr['open_public_routes'];
         define('ENV', is_bool($appDevEnv) ? $appDevEnv : true);
 
-        $fullRoute = $e->getRouteMatch()->getMatchedRouteName();
-        $routeArr = explode('/', $fullRoute);
-        $route = ($routeArr && count($routeArr)) ? $routeArr[0] : null;
-
-        /**
-         * @var Response
-         */
-        $res = $e->getResponse();
-
-        if ($route && !in_array($route, $openPublicRoutes)) {
-            $res = $this->isApiKeyValid($e);
-        }
-
-        if ($res->getStatusCode() == 200 && !in_array($route, $openPublicRoutes)) {
-
+        if ($res->getStatusCode() == 200) {
+            $fullRoute = $e->getRouteMatch()->getMatchedRouteName();
+            $routeArr = explode('/', $fullRoute);
+            $route = ($routeArr && count($routeArr)) ? $routeArr[0] : null;
             if ($route && !in_array($route, $openIdentityRoutes)) {
                 // if ('login' != $routeArr[0]) {
 

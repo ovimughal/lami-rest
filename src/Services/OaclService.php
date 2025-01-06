@@ -216,7 +216,7 @@ class OaclService extends OmodelBaseProvider
     public function dbResourceDump()
     {
         try {
-            $dql = 'SELECT acl.get, acl.post, acl.put, acl.patch, acl.delete, r.rolename, '
+            $dql = 'SELECT acl.getval, acl.postval, acl.putval, acl.patchval, acl.deleteval, r.rolename, '
                     . 'rt.modulename, rt.controllername, rt.routename '
                     . 'FROM ' . $this->getPath() . '\Acl acl JOIN acl.roleid r '
                     . 'JOIN acl.routeid rt where r.rolename = ?1';
@@ -237,27 +237,27 @@ class OaclService extends OmodelBaseProvider
                 $controller = $data['controllername'];
                 $route = $data['routename'];
 
-                if ($data['get']) {
+                if ($data['getval']) {
                     $method = 'GET';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
 
-                if ($data['post']) {
+                if ($data['postval']) {
                     $method = 'POST';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
 
-                if ($data['put']) {
+                if ($data['putval']) {
                     $method = 'PUT';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
 
-                if ($data['patch']) {
+                if ($data['patchval']) {
                     $method = 'PATCH';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
 
-                if ($data['delete']) {
+                if ($data['deleteval']) {
                     $method = 'DELETE';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
