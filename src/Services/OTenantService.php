@@ -38,7 +38,7 @@ class OTenantService
     //     try {
     //         $loginResult = self::$tenantProvider->login($username, $password);
     //     } catch (Exception $exc) {
-    //         throw new Exception($exc);
+    //         throw $exc;
     //     }
 
     //     return $loginResult;
@@ -49,7 +49,7 @@ class OTenantService
         try {
             $tenantInfo = $this->tenantProvider->getTenantInfoById($organizationId, $tenantinfo);
         } catch (Exception $exc) {
-            throw new Exception($exc);
+            throw $exc;
         }
 
         return $tenantInfo;
@@ -63,7 +63,7 @@ class OTenantService
                 ServiceInjector::oConfigHighjacker()->overrideDbConfig($tenantInfo);
             }
         } catch (Exception $exc) {
-            throw new Exception($exc);
+            throw $exc;
         }
 
         return $tenantInfo;
@@ -88,7 +88,7 @@ class OTenantService
             if ($organizationId) {
                 $tenantInfo = $this->tenantConnection($organizationId);
             }
-
+            
             if (!$tenantInfo) {
 
                 // $tenantData['host'] = getenv('MASTER_DB_HOST');
@@ -100,6 +100,8 @@ class OTenantService
                 // ServiceInjector::oConfigHighjacker()->overrideDbConfig($tenantData);
 
                 throw new Exception('Invalid tenant');
+            } else if($tenantInfo['islocked']){
+                throw new Exception('Tenant has been locked, you are not authorized to access');
             }
         } catch (Exception $exc) {
             $res->setStatusCode(401); //Unauthorised access to tenant

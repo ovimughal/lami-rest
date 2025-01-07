@@ -73,7 +73,7 @@ class OConfigHighjackerService
                 $this->overrideConfig($oconfig);
             }
         } catch (Exception $exc) {
-            throw new Exception($exc);
+            throw $exc;
         }
     }
 }

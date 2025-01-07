@@ -243,9 +243,17 @@ function exportOutput($jasperPrint, $outputFormat = 'pdf')
                 $outputPath = $outputDir . '/' . $outputFileName . '.xls';
 
                 $exporter = new java('net.sf.jasperreports.engine.export.JRXlsExporter');
-                $exporter->setParameter(java('net.sf.jasperreports.engine.export.JRXlsExporterParameter')->IS_ONE_PAGE_PER_SHEET, java('java.lang.Boolean')->TRUE);
-                $exporter->setParameter(java('net.sf.jasperreports.engine.export.JRXlsExporterParameter')->IS_WHITE_PAGE_BACKGROUND, java('java.lang.Boolean')->FALSE);
+                $exporter->setParameter(java('net.sf.jasperreports.engine.export.JRXlsExporterParameter')->IS_ONE_PAGE_PER_SHEET, java('java.lang.Boolean')->FALSE);
+                $exporter->setParameter(java('net.sf.jasperreports.engine.export.JRXlsExporterParameter')->IS_WHITE_PAGE_BACKGROUND, java('java.lang.Boolean')->TRUE);
                 $exporter->setParameter(java('net.sf.jasperreports.engine.export.JRXlsExporterParameter')->IS_REMOVE_EMPTY_SPACE_BETWEEN_ROWS, java('java.lang.Boolean')->TRUE);
+                $exporter->setParameter(java('net.sf.jasperreports.engine.export.JRXlsExporterParameter')->IS_REMOVE_EMPTY_SPACE_BETWEEN_COLUMNS, java('java.lang.Boolean')->TRUE);
+                $exporter->setParameter(java('net.sf.jasperreports.engine.export.JRXlsExporterParameter')->IS_IGNORE_GRAPHICS, java('java.lang.Boolean')->TRUE);
+                $exporter->setParameter(java('net.sf.jasperreports.engine.export.JRXlsExporterParameter')->IS_IMAGE_BORDER_FIX_ENABLED, java('java.lang.Boolean')->TRUE);
+                $exporter->setParameter(java('net.sf.jasperreports.engine.export.JRXlsExporterParameter')->IS_DETECT_CELL_TYPE, java('java.lang.Boolean')->TRUE);
+
+
+
+
                 // $exporter->setParameter(java('net.sf.jasperreports.engine.JRExporterParameter')->JASPER_PRINT, $jasperPrint);
                 $exporter->setParameter(java('net.sf.jasperreports.engine.JRExporterParameter')->JASPER_PRINT_LIST, $jasperPrint);
                 $exporter->setParameter(java('net.sf.jasperreports.engine.JRExporterParameter')->OUTPUT_FILE_NAME, $outputPath);

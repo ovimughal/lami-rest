@@ -89,13 +89,13 @@ class OmodelBaseProvider extends OhandlerBaseProvider
             $result = ['_id' => $lastInsertId]; //['_id' => $lastInsertId, 'msg' => 'success'];
         } catch (Exception $exc) {
             parent::setSuccess(false);
-            throw new Exception($exc);
+            throw $exc;
         }
 
         return $result;
     }
 
-    public function select($dql, $paramsArr, $errMsg = null, $limit = null, $offset = null, $option = null, string $doctrineServiceName = 'doctObjMngr')
+    public function select($dql, $paramsArr, $errMsg = null, $limit = null, $option = null, string $doctrineServiceName = 'doctObjMngr',$offset =null)
     {
         try {
             parent::setSuccess(true);
@@ -126,7 +126,7 @@ class OmodelBaseProvider extends OhandlerBaseProvider
             }
         } catch (Exception $exc) {
             parent::setSuccess(false);
-            throw new Exception($exc);
+            throw $exc;
         }
 
         return $result;
@@ -169,7 +169,7 @@ class OmodelBaseProvider extends OhandlerBaseProvider
         } catch (Exception $exc) {
             parent::setSuccess(false);
             $result = $exc;
-            throw new Exception($exc);
+            throw $exc;
         }
 
         return $result;
@@ -212,7 +212,7 @@ class OmodelBaseProvider extends OhandlerBaseProvider
         } catch (Exception $exc) {
             parent::setSuccess(false);
             $result = $exc;
-            throw new Exception($exc);
+            throw $exc;
         }
 
         return $result;
@@ -267,7 +267,7 @@ class OmodelBaseProvider extends OhandlerBaseProvider
             );
         } catch (Exception $exc) {
             if ($throwExc) {
-                throw new Exception($exc);
+                throw $exc;
             }
 
             $result = $exc;

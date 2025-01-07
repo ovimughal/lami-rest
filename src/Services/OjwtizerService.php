@@ -142,7 +142,7 @@ class OjwtizerService extends OjwtizerServiceBaseProvider
             }
             fclose($f);
         } catch (Exception $exc) {
-            throw new Exception($exc);
+            throw $exc;
         }
     }
 

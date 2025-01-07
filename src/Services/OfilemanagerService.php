@@ -203,18 +203,31 @@ class OfilemanagerService extends OhandlerBaseProvider
         return $secureKey;
     }
 
-    public function getFileDownloadLink($routeResource, $filename, $format = null)
+    public function getFileDownloadLink($routeResource, $filename, $format = null, $getAbsoluteFilePath = false)
     {
+        $getAbsoluteFilePath = (($GLOBALS['ABSOLUTE_FILE_PATH_FOR_LOGOS'] ?? false) || ($GLOBALS['ABSOLUTE_FILE_PATH_FOR_EMAIL_POPUP'] ?? false)) ? true : $getAbsoluteFilePath;
         $downloadLink = $this->getConfigValue($routeResource);
-        if ($downloadLink !== 'Wrong/No Key') {
-            $secureKey = $this->getSecureHyperlinkKey();
-            $outputFormat = null == $format ? '' : '.' . $format;
-            $linkId = md5(time());
+        $outputFormat = null == $format ? '' : '.' . $format;
 
-            $fileDownloadLink = $downloadLink . '/' . $filename . $outputFormat . '?' . $secureKey.'&linkId='.$linkId;
+        if ($getAbsoluteFilePath) {
+            $route = explode('/',$downloadLink);
+            $resourceName = end($route);
+            // This is the actual physical file path which will be used only internally
+            // e.g when sending a file as attachment or show logo on reports. Why to do circular requests
+            $fileDownloadLink = $this->getFolderPath($resourceName) . SLASH . $filename . $outputFormat;
         } else {
-            $fileDownloadLink = 'Invalid configuration key';
+            if ($downloadLink !== 'Wrong/No Key') {
+                // To encode filename having special chars & spaces in them
+                $filename = rawurlencode($filename);
+                $secureKey = $this->getSecureHyperlinkKey();                
+                $linkId = md5(time());
+    
+                $fileDownloadLink = $downloadLink . '/' . $filename . $outputFormat . '?' . $secureKey.'&linkId='.$linkId;
+            } else {
+                $fileDownloadLink = 'Invalid configuration key';
+            }
         }
+
         return $fileDownloadLink;
     }
 
