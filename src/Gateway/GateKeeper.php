@@ -14,6 +14,7 @@ namespace Lamirest\Gateway;
 use Laminas\Http\Response;
 use Lamirest\DI\ServiceInjector;
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
+use Lamirest\OpenServices\OLoggerService;
 use Lamirest\Services\OaclService;
 use Lamirest\Services\OapisecurityService;
 use Lamirest\Services\OConfigHighjackerService;
@@ -30,19 +31,19 @@ class GateKeeper extends AbstractPlugin
 
     public function routeIdentifier(\Laminas\Mvc\MvcEvent $e): Response
     {
-        $this->injectServiceLocator($e);
+        $this->handleWarning();
+        // Moved injector to loadConfiguration method in app bootstrap
+        // $this->injectServiceLocator($e);
         //        $this->appLanguage($e);
 
         $oConfigMngr = ServiceInjector::$serviceLocator->get('config')['oconfig_manager'];
         $loginEnabled = $oConfigMngr['settings']['enable_login'];
-        $enableAcl = $oConfigMngr['settings']['enable_acl'];
-        $appDevEnv = $oConfigMngr['settings']['app_development_env'];
-        $multitenancyEnabled = $oConfigMngr['settings']['enable_multitenancy'];
+        // Moved to loadConfiguration method in app bootstrap
+        // $appDevEnv = $oConfigMngr['settings']['app_development_env'];
         $openIdentityRoutes = $oConfigMngr['open_identity_routes'];
         $openAccessRoutes = $oConfigMngr['open_access_routes'];
-        $ssoRoutes = $oConfigMngr['sso_routes'];
-        $openPublicRoutes = $oConfigMngr['open_public_routes'];
-        define('ENV', is_bool($appDevEnv) ? $appDevEnv : true);
+        // Moved to loadConfiguration method in app bootstrap
+        // define('DEV_ENV', is_bool($appDevEnv) ? $appDevEnv : true);
 
         $fullRoute = $e->getRouteMatch()->getMatchedRouteName();
         $routeArr = explode('/', $fullRoute);
@@ -137,6 +138,25 @@ class GateKeeper extends AbstractPlugin
          */
         $oaclManager = $sm->get('Oacl');
         return $oaclManager->authorizationCheck($e);
+    }
+
+    public function handleWarning() : void
+    {
+        set_error_handler(function ($err_severity, $err_msg, $err_file, $err_line, array $err_context) {
+            // throw new ErrorException($err_msg, 0, $err_severity, $err_file, $err_line);
+            OLoggerService::WARNING(
+                $err_msg,
+                [
+                    'logCall' => 'handleWarning',
+                    'stackTrace' => $err_context
+                ],
+                [
+                    'code' => 0,
+                    'filename' => $err_file,
+                    'line' => $err_line,
+                ]
+            );
+        }, E_WARNING);
     }
 
     // public function appLanguage(\Laminas\Mvc\MvcEvent $e): void

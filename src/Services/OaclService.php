@@ -4,6 +4,7 @@ namespace Lamirest\Services;
 
 use Exception;
 use Laminas\Mvc\MvcEvent;
+use GlobalProcedure\Service\Tenant\TenantService;
 use Lamirest\BaseProvider\OmodelBaseProvider;
 use Lamirest\DI\ServiceInjector;
 use Lamirest\Sniffers\OexceptionSniffer;
@@ -170,14 +171,21 @@ class OaclService extends OmodelBaseProvider
             $role = $this->getRole();
             $acl = true == $db_acl_enabled ? $this->dbResourceDump() : $this->resourceDump();
             $result = $this->requestAnalyzer($e);
+            $analyzedModule = $this->licensedModuleAnalyzer($result['moduleName']);
+            $forbiddenMsg = 'You Are Not Authorized To Access';
+            if(!$analyzedModule['isModuleEnabled']){
+                $requestedModule = $analyzedModule['requestedModule'];
+                $result['controller'] = 'NA'; // Not Allowed
+                $forbiddenMsg = 'The '. $requestedModule . ' module is not enabled in your active plan. Consider a plan upgrade.';
+            }
             if (!$acl->isAllowed($role, $result['module'], $result['controller'] . ':' . $result['route'] . ':' . $result['method'])) {
                 $res->setStatusCode(403); //Forbidden
                 $this->setSuccess(false);
-                $this->setMsg('You Are Not Authorized To Access');
+                $this->setMsg($forbiddenMsg);
                 $allowed = false;
             }
         } catch (Exception $exc) {
-            $res->setStatusCode(417); //Expectation Failed
+            $res->setStatusCode(500); //Expectation Failed
             $this->setData(OexceptionSniffer::exceptionScanner($exc));
             $allowed = false;
         }
@@ -189,10 +197,11 @@ class OaclService extends OmodelBaseProvider
     }
 
     public function requestAnalyzer(MvcEvent $e)
-    {        
+    {
         $controllerTarget = $e->getTarget();
         $controllerClass = get_class($controllerTarget);
-        $moduleName = strtolower(substr($controllerClass, 0, strpos($controllerClass, '\\')));
+        $ModuleName = substr($controllerClass, 0, strpos($controllerClass, '\\'));
+        $moduleName = strtolower($ModuleName);
         $routeMatch = $e->getRouteMatch();
         //start new for oRest
         $fullRoute = $routeMatch->getMatchedRouteName();
@@ -216,6 +225,7 @@ class OaclService extends OmodelBaseProvider
         }
 
         return [
+            'moduleName' => $ModuleName,
             'module' => $moduleName,
             'controller' => $controller,
             'route' => $route, //new for oRest
@@ -223,10 +233,38 @@ class OaclService extends OmodelBaseProvider
         ];
     }
 
+    private function licensedModuleAnalyzer($module): array
+    {
+        try {
+            $isModuleAllowed = false;
+            $mainModule = 'GL';
+
+            $moduleLicenseGroups = $this->getOconfigManager()['licensedModules'];
+            foreach ($moduleLicenseGroups as $key => $value) {
+                if (in_array($module, $value)) {
+                    $mainModule = $key;
+                    break;
+                }
+            }
+            if ($mainModule) {
+                $orgId = $this->organizationId();
+                $tenantInfo = TenantService::tenantInfo($orgId);
+                $modulesEnabled = explode(',', $tenantInfo['modulesenabled']);
+                if (in_array($mainModule, $modulesEnabled)) {
+                    $isModuleAllowed = true;
+                }
+            }
+
+            return ['isModuleEnabled' => $isModuleAllowed, 'requestedModule' => $mainModule];
+        } catch (Exception $exc) {
+            throw $exc;
+        }
+    }
+
     public function dbResourceDump()
     {
         try {
-            $dql = 'SELECT acl.getval, acl.postval, acl.putval, acl.patchval, acl.deleteval, r.rolename, '
+            $dql = 'SELECT acl.get, acl.post, acl.put, acl.patch, acl.delete, r.rolename, '
                     . 'rt.modulename, rt.controllername, rt.routename '
                     . 'FROM ' . $this->getPath() . '\Acl acl JOIN acl.roleid r '
                     . 'JOIN acl.routeid rt where r.rolename = ?1';
@@ -251,27 +289,27 @@ class OaclService extends OmodelBaseProvider
                     continue;
                 }
 
-                if ($data['getval']) {
+                if ($data['get']) {
                     $method = 'GET';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
 
-                if ($data['postval']) {
+                if ($data['post']) {
                     $method = 'POST';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
 
-                if ($data['putval']) {
+                if ($data['put']) {
                     $method = 'PUT';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
 
-                if ($data['patchval']) {
+                if ($data['patch']) {
                     $method = 'PATCH';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }
 
-                if ($data['deleteval']) {
+                if ($data['delete']) {
                     $method = 'DELETE';
                     $this->allowAcl($acl, $role, $module, $controller, $route, $method);
                 }

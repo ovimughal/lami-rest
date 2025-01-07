@@ -20,18 +20,25 @@ class OhandlerBaseProvider extends OBaseProvider
 {
 
     private static $success;
+    /**
+     * Possible values are
+     * success, info, warn, error
+     */
     private static $notificationType;
     private static $notificationDisplay;
     private static $msg;
     private static $data;
+    private static $objectInitialized = false;
 
     public function __construct()
     {
-        self::initHandler();
+        if(!self::$objectInitialized)
+            self::initHandler();
     }
 
     private static function initHandler()
     {
+        self::$objectInitialized = true;
         self::setSuccess(true);
         self::setNotificationType('success');
         self::setNotificationDisplay(true);
@@ -97,6 +104,7 @@ class OhandlerBaseProvider extends OBaseProvider
     public static function getResult()
     {
         $result = [
+            'appVersion' => self::appVersion(),
             'success' => self::getSuccess(),
             'notificationType' => self::getNotificationType(),
             'notificationDisplay' => self::getNotificationDisplay(),

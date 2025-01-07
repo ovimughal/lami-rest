@@ -21,36 +21,41 @@ use Lamirest\DI\ServiceInjector;
 class OBaseProvider
 {
 
-    private static $organizationId = null;
+    private static ?int $organizationId = null;
 
     public static function getOserviceLocator()
     {
         return ServiceInjector::$serviceLocator;
     }
 
-    public function getOconfig()
+    public static function getOconfig()
     {
         return ServiceInjector::$serviceLocator->get('config');
     }
 
-    public function getOconfigManager()
+    public static function getOconfigManager()
     {
-        return $this->getOconfig()['oconfig_manager'];
+        return self::getOconfig()['oconfig_manager'];
     }
 
-    public function appUrl()
+    public static function appUrl()
     {
-        return $this->getOconfigManager()['settings']['app_url'];
+        return self::getOconfigManager()['settings']['app_url'];
     }
 
-    public function apiUrl()
+    public static function appVersion()
     {
-        return $this->getOconfigManager()['settings']['api_url'];
+        return self::getOconfigManager()['settings']['app_version'];
     }
 
-    public function apiKey()
+    public static function apiUrl()
     {
-        return $this->getOconfigManager()['api']['api_key'];
+        return self::getOconfigManager()['settings']['api_url'];
+    }
+
+    public static function apiKey()
+    {
+        return self::getOconfigManager()['api']['api_key'];
     }
 
     public function setOrganizationId($id)
@@ -58,13 +63,16 @@ class OBaseProvider
         self::$organizationId = $id;
     }
 
-    public function organizationId(bool $asQueryString = false)
+    public static function organizationId(bool $asQueryString = false)
     {
         $req = self::getOserviceLocator()->get('Request');
-        $tenantIdName = $this->getOconfigManager()['tenant']['tenant_id_name'];
+        $tenantIdName = self::getOconfigManager()['tenant']['tenant_id_name'];
         $organizationId = (int)$req->getQuery($tenantIdName);
 
-        if (!$organizationId) {
+        if(!$organizationId) {
+            $organizationId = self::$organizationId??$organizationId;
+        }
+        else if (self::$organizationId && ($organizationId != self::$organizationId)) {
             $organizationId = self::$organizationId??$organizationId;
         }
 
